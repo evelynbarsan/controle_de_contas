@@ -1,0 +1,1 @@
+Aplicação para uso pessoal, com intuito de testar e conhecer o framework Next e testar IA na geração de código.

@@ -1,0 +1,76 @@
+services:
+  # ── Serviço de migrations ──────────────────────────────────────────────────
+  # Usa o estágio builder (node_modules completo com mysql2).
+  # Roda uma única vez, aplica as migrations e sai.
+  # O serviço app só inicia após este completar com sucesso.
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: builder          # estágio com node_modules completo
+    container_name: controle_contas_migrate
+    command: ["node", "scripts/migrate.mjs"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}
+    networks:
+      - contas_network
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: controle_contas_app
+    restart: unless-stopped
+
+    # Carrega variáveis de .env — nunca bake secrets na imagem
+    env_file:
+      - .env
+    # Monta DATABASE_URL a partir das variáveis individuais
+    environment:
+      DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}
+
+    ports:
+      - "127.0.0.1:3000:3000"   # vincula apenas ao loopback; use proxy reverso em produção
+
+    networks:
+      - contas_network
+
+    # Aguarda o migrate completar com sucesso antes de iniciar
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+    # ── Hardening de segurança ──────────────────────────────────────────────────
+    read_only: true              # sistema de arquivos somente-leitura
+    tmpfs:
+      - /tmp:size=64m,mode=1777  # única área gravável em memória
+    cap_drop:
+      - ALL                      # remove todas as capabilities Linux
+    security_opt:
+      - no-new-privileges:true   # impede escalada de privilégios
+    user: "1001:1001"            # UID/GID do usuário nextjs criado no Dockerfile
+
+    # Limites de recursos para mitigar DoS
+    deploy:
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 512M
+        reservations:
+          memory: 128M
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+# ── Rede externa criada pelo base_de_dados/docker-compose.yml ──────────────────
+networks:
+  contas_network:
+    external: true
+    name: contas_network

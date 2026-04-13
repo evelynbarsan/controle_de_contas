@@ -1,0 +1,17 @@
+# Arquivos de ambiente com senhas e secrets — NUNCA versionar
+**/.env
+**/.env.local
+**/.env.production
+**/.env.development
+
+# Dependências Node
+**/node_modules/
+
+# Build Next.js
+controle-de-contas/.next/
+
+# Dados do banco MySQL (volume Docker local)
+base_de_dados/data/
+
+# Logs
+*.log
