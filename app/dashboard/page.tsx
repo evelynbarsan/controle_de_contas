@@ -72,8 +72,10 @@ export default async function DashboardPage({
       return fy === year && fm === month;
     })
     .reduce((s, c) => s + Number(c.valor_unitario), 0);
-  // Total de parcelas pagas neste mês
-  const mesTotal = contas.reduce((s, c) => s + Number(c.valor_unitario), 0);
+  // Total bruto do mês (sem pagamentos)
+  const mesTotal = contas
+    .filter(c => c.modalidade !== "pagamento")
+    .reduce((s, c) => s + Number(c.valor_unitario), 0);
 
   return (
     <main className="min-h-screen bg-gray-50">

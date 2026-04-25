@@ -8,7 +8,6 @@ WORKDIR /app
 # Copia node_modules do host (já instalado, sem acesso à internet no build)
 #COPY node_modules ./node_modules
 COPY package.json package-lock.json* ./
-RUN npm install
 COPY . .
 
 # Variáveis disponíveis apenas em build-time (não ficam na imagem final)
