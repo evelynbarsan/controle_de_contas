@@ -32,5 +32,5 @@ CREATE TABLE IF NOT EXISTS contas (
   INDEX idx_contas_tipo      (tipo_conta_id),
   INDEX idx_contas_fonte     (fonte_id),
   INDEX idx_contas_frequencia (frequencia_id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
