@@ -6,7 +6,7 @@ FROM node:20-slim AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci --production
+RUN npm ci
 COPY . .
 
 # Variáveis disponíveis apenas em build-time (não ficam na imagem final)
