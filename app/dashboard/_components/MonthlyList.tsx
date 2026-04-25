@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import type { ContaWithJoins } from "@/models/conta";
 import type { LookupItem } from "@/models/lookup";
 import type { Pagamento }     from "@/models/pagamento";
@@ -128,6 +128,8 @@ export function MonthlyList({
   const totalPago = pagamentos.reduce((s, p) => s + Number(p.valor_pago), 0);
   const restante  = grandTotal - totalPago;
 
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
   if (groups.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-10 text-center">
@@ -144,22 +146,33 @@ export function MonthlyList({
           (s, c) => s + (pagoMap.has(c.id) ? Number(pagoMap.get(c.id)!.valor_pago) : 0),
           0,
         );
+        const isOpen = !!expanded[group.nome];
         return (
           <div key={group.nome}>
             {/* Fonte header */}
-            <div className="flex items-center justify-between px-3 sm:px-5 py-2 sm:py-2.5 bg-gray-50 border-b border-gray-100">
+            <button
+              type="button"
+              className="flex items-center justify-between w-full px-3 sm:px-5 py-2 sm:py-2.5 bg-gray-50 border-b border-gray-100 focus:outline-none focus:bg-blue-50 transition"
+              onClick={() => setExpanded(e => ({ ...e, [group.nome]: !e[group.nome] }))}
+              aria-expanded={isOpen}
+            >
               <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                 {group.nome}
               </span>
-              {groupPago > 0 && (
-                <span className="text-xs text-emerald-600 font-semibold">
-                  {brl(groupPago)} pago
-                </span>
-              )}
-            </div>
+              <span className="flex items-center gap-2">
+                {groupPago > 0 && (
+                  <span className="text-xs text-emerald-600 font-semibold">
+                    {brl(groupPago)} pago
+                  </span>
+                )}
+                <svg className={`w-4 h-4 ml-2 transition-transform ${isOpen ? "rotate-90" : "rotate-0"}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </button>
 
-            {/* Rows */}
-            {group.contas.map((c) => {
+            {/* Rows (expand/collapse) */}
+            {isOpen && group.contas.map((c) => {
               const pg   = pagoMap.get(c.id);
               const pago = !!pg;
               return (
