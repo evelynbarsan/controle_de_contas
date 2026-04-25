@@ -1,0 +1,68 @@
+services:
+  - type: pserv
+    runtime: docker
+    name: controle-de-contas-db
+    plan: starter
+    region: ohio
+    dockerfilePath: ./controle-de-contas/docker/render/mysql.Dockerfile
+    dockerContext: ./controle-de-contas
+    envVars:
+      - key: MYSQL_DATABASE
+        value: controle_contas
+      - key: MYSQL_USER
+        value: app_user
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_ROOT_PASSWORD
+        sync: false
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+
+  - type: web
+    runtime: node
+    name: controle-de-contas-app
+    plan: starter
+    region: ohio
+    rootDir: ./controle-de-contas
+    buildCommand: npm ci && npm run build
+    preDeployCommand: npm run migrate
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: controle-de-contas-db
+          property: host
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        fromService:
+          type: pserv
+          name: controle-de-contas-db
+          envVarKey: MYSQL_DATABASE
+      - key: DB_USER
+        fromService:
+          type: pserv
+          name: controle-de-contas-db
+          envVarKey: MYSQL_USER
+      - key: DB_PASSWORD
+        fromService:
+          type: pserv
+          name: controle-de-contas-db
+          envVarKey: MYSQL_PASSWORD
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: ALLOWED_ORIGIN
+        sync: false
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: APP_SECRET
+        generateValue: true
