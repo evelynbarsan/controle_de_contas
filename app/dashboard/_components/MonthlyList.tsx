@@ -193,7 +193,16 @@ export function MonthlyList({
                 >
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium truncate ${pago ? "text-gray-400 line-through" : "text-gray-800"}`}>
+                    <p className={`text-sm font-medium truncate flex items-center gap-2 ${pago ? "text-gray-400 line-through" : "text-gray-800"}`}>
+                      {c.data_contratacao && (
+                        <span className="text-xs text-gray-400 font-normal">
+                          {(() => {
+                            // Formata data_contratacao de aaaa-mm-dd para dd/mm/aaaa
+                            const [y, m, d] = c.data_contratacao.split("-");
+                            return `${d}/${m}/${y}`;
+                          })()}
+                        </span>
+                      )}
                       {c.titulo}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5 flex flex-wrap gap-x-2">
