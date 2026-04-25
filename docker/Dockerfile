@@ -6,7 +6,7 @@ FROM node:20-slim AS builder
 WORKDIR /app
 
 # Copia node_modules do host (já instalado, sem acesso à internet no build)
-COPY node_modules ./node_modules
+#COPY node_modules ./node_modules
 COPY package.json package-lock.json* ./
 COPY . .
 
