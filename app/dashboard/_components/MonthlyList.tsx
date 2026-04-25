@@ -172,12 +172,21 @@ export function MonthlyList({
             </button>
 
             {/* Rows (expand/collapse) */}
-            {isOpen && group.contas.map((c) => {
-              const pg   = pagoMap.get(c.id);
-              const pago = !!pg;
-              return (
-                <div
-                  key={c.id}
+            {isOpen && [...group.contas]
+              .sort((a, b) => {
+                // Ordena por data_contratacao (mais antigo em cima)
+                // Se não houver data_contratacao, mantém no topo
+                if (!a.data_contratacao && !b.data_contratacao) return 0;
+                if (!a.data_contratacao) return -1;
+                if (!b.data_contratacao) return 1;
+                return a.data_contratacao.localeCompare(b.data_contratacao);
+              })
+              .map((c) => {
+                const pg   = pagoMap.get(c.id);
+                const pago = !!pg;
+                return (
+                  <div
+                    key={c.id}
                   className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-3 border-b border-gray-50 transition-colors ${
                     pago ? "bg-emerald-50/40 hover:bg-emerald-50/70" : "hover:bg-gray-50/70"
                   }`}
